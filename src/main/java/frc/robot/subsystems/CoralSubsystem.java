@@ -114,7 +114,11 @@ public class CoralSubsystem extends SubsystemBase {
               "Arm",
               SimulationRobotConstants.kArmLength * SimulationRobotConstants.kPixelsPerMeter,
               180 - Units.radiansToDegrees(SimulationRobotConstants.kMinAngleRads) - 90));
-
+          
+              private static final CoralSubsystem m_coral = new CoralSubsystem();
+              public static CoralSubsystem getInstance(){
+                return m_coral;
+              }
   public CoralSubsystem() {
     /*
      * Apply the appropriate configurations to the SPARKs.

@@ -113,5 +113,22 @@ public final class Configs {
       intakeConfig.inverted(true).idleMode(IdleMode.kBrake).smartCurrentLimit(40);
     }
   }
-    
+  public static final class Elevatorsubsystem{
+        public static final SparkMaxConfig elevatorconfig = new SparkMaxConfig();
+  
+    static {
+        elevatorconfig.idleMode(IdleMode.kCoast).smartCurrentLimit(40).voltageCompensation(12);
+        elevatorconfig.limitSwitch.reverseLimitSwitchEnabled(true).reverseLimitSwitchType(Type.kNormallyOpen);
+
+        elevatorconfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+        .p(.1)
+        .outputRange(-1, 1)
+        .maxMotion
+        .maxVelocity(4200)
+        .maxAcceleration(6000)
+        .allowedClosedLoopError(.5);
+        
+
+  }
+}
 }

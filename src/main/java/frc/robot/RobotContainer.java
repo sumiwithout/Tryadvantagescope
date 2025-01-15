@@ -20,10 +20,13 @@ import edu.wpi.first.wpilibj.PS4Controller.Button;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
+import frc.robot.subsystems.CoralSubsystem;
+import frc.robot.subsystems.CoralSubsystem.Setpoint;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import java.util.List;
 
@@ -39,10 +42,10 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 public class RobotContainer {
   // The robot's subsystems
   private final DriveSubsystem m_robotDrive = DriveSubsystem.getInstance();
-
+private final CoralSubsystem m_coralSubSystem = CoralSubsystem.getInstance();
   // The driver's controller
-  XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
-  private final Field2d field;
+CommandXboxController m_driverController =
+      new CommandXboxController(OIConstants.kDriverControllerPort);  private final Field2d field;
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -97,10 +100,30 @@ public class RobotContainer {
    * {@link JoystickButton}.
    */
   private void configureButtonBindings() {
-    new JoystickButton(m_driverController, Button.kR1.value)
-        .whileTrue(new RunCommand(
-            () -> m_robotDrive.setX(),
-            m_robotDrive));
+   // Left Stick Button -> Set swerve to X
+   m_driverController.leftStick().whileTrue(m_robotDrive.setXCommand());
+
+m_driverController.leftBumper().whileTrue(m_coralSubSystem.runIntakeCommand());
+
+    // Right Bumper -> Run tube intake in reverse
+    m_driverController.rightBumper().whileTrue(m_coralSubSystem.reverseIntakeCommand());
+
+ 
+
+    // A Button -> Elevator/Arm to level 2 position
+    m_driverController.a().onTrue(m_coralSubSystem.setSetpointCommand(Setpoint.kLevel2));
+
+    // X Button -> Elevator/Arm to level 3 position
+    m_driverController.x().onTrue(m_coralSubSystem.setSetpointCommand(Setpoint.kLevel3));
+
+    // Y Button -> Elevator/Arm to level 4 position
+    m_driverController.y().onTrue(m_coralSubSystem.setSetpointCommand(Setpoint.kLevel4));
+
+
+  }
+  public double getSimulationTotalCurrentDraw() {
+    // for each subsystem with simulation
+    return m_coralSubSystem.getSimulationCurrentDraw();
   }
 
   /**
