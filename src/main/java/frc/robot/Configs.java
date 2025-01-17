@@ -115,10 +115,15 @@ public final class Configs {
   }
   public static final class Elevatorsubsystem{
         public static final SparkMaxConfig elevatorconfig = new SparkMaxConfig();
-  
+        // public static final SparkMaxConfig followmotor = new SparkMaxConfig();
     static {
         elevatorconfig.idleMode(IdleMode.kCoast).smartCurrentLimit(40).voltageCompensation(12);
         elevatorconfig.limitSwitch.reverseLimitSwitchEnabled(true).reverseLimitSwitchType(Type.kNormallyOpen);
+        
+        // followmotor.idleMode(IdleMode.kCoast).smartCurrentLimit(40).voltageCompensation(12);
+        // followmotor.limitSwitch.reverseLimitSwitchEnabled(true).reverseLimitSwitchType(Type.kNormallyOpen);
+        // followmotor.inverted(true).follow(20);
+
 
         elevatorconfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .p(.1)

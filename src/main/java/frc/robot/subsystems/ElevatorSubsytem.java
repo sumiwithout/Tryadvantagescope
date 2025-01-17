@@ -10,8 +10,12 @@ import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Configs.Elevatorsubsystem;
+import frc.robot.Constants.CoralSubsystemConstants.ElevatorSetpoints;
 
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -25,20 +29,87 @@ public class ElevatorSubsytem extends SubsystemBase{
             level4
     }
     private SparkMax elevatormotor = new SparkMax(20, MotorType.kBrushless);
+    // private SparkMax followmotor = new SparkMax(100, MotorType.kBrushless);
     private SparkClosedLoopController elactorcontorller = elevatormotor.getClosedLoopController();
     private RelativeEncoder elevatEncoder = elevatormotor.getEncoder();
 
     private DCMotor eleccatorMotorModele = DCMotor.getNEO(20);
     private SparkMaxSim elevatorMotorSim;
       private SparkLimitSwitchSim elevatorLimitSwitchSim;
-
+       private boolean wasResetByButton = false;
+  private boolean wasResetByLimit = false;
+  private double elevatorCurrentTarget = ElevatorSetpoints.kFeederStation;
+  private static final ElevatorSubsytem m_elevator = new ElevatorSubsytem();
+  public static ElevatorSubsytem getInstance(){
+    return m_elevator;
+  }
 public ElevatorSubsytem(){
     elevatormotor.configure(Elevatorsubsystem.elevatorconfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    // followmotor.configure(Elevatorsubsystem.followmotor, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     elevatEncoder.setPosition(0);
 
 }
 private void moveToSetpoint(){
 //  will work on it more later
+elactorcontorller.setReference(elevatorCurrentTarget, ControlType.kMAXMotionPositionControl);
+}
+public void zeroTheElevatorOnLimitSwitch(){
+    if(!wasResetByButton && elevatormotor.getReverseLimitSwitch().isPressed()){
+        elevatEncoder.setPosition(0);
+        wasResetByLimit=true;
+    }
+    else if(!elevatormotor.getReverseLimitSwitch().isPressed()){
+        wasResetByLimit=false;
+
+    }
+}
+ private void zeroOnUserButton() {
+    if (!wasResetByButton && RobotController.getUserButton()) {
+      // Zero the encoders only when button switches from "unpressed" to "pressed" to prevent
+      // constant zeroing while pressed
+      wasResetByButton = true;
+      elevatEncoder.setPosition(0);
+    } else if (!RobotController.getUserButton()) {
+      wasResetByButton = false;
+    }
+  }
+   public Command setSetpointCommand(hightes setpoint) {
+    return this.runOnce(
+        () -> {
+          switch (setpoint) {
+            case stattion:
+              elevatorCurrentTarget = ElevatorSetpoints.kFeederStation;
+              break;
+            case level:
+              elevatorCurrentTarget = ElevatorSetpoints.kLevel1;
+              break;
+            case levcel2:
+              elevatorCurrentTarget = ElevatorSetpoints.kLevel2;
+              break;
+            case level3:
+              elevatorCurrentTarget = ElevatorSetpoints.kLevel3;
+              break;
+            case level4:
+              elevatorCurrentTarget = ElevatorSetpoints.kLevel4;
+              break;
+          }
+        });
+  }
+
+@Override
+public void periodic(){
+    moveToSetpoint();
+    zeroTheElevatorOnLimitSwitch();
+    zeroOnUserButton();
+     SmartDashboard.putNumber("levator/Target Position", elevatorCurrentTarget);
+    SmartDashboard.putNumber("Elevator/Actual Position", elevatEncoder.getPosition());
+
+}
+public void setCurrenttarget(int num){
+    elevatorCurrentTarget = num;
+}
+public double getencoder(){
+    return elevatEncoder.getPosition();
 }
 
 }
